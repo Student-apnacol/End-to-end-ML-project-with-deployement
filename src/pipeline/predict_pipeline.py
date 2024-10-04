@@ -1,8 +1,12 @@
-import os  # Add this line
+import os
 import sys
 import pandas as pd
 from src.exception import CustomException
 from src.utils import load_object
+import logging
+
+# Set up logging configuration
+logging.basicConfig(level=logging.INFO)
 
 class PredictPipeline:
     def __init__(self):
@@ -12,15 +16,18 @@ class PredictPipeline:
         try:
             model_path = os.path.join("artifacts", "model.pkl")
             preprocessor_path = os.path.join('artifacts', 'preprocessor.pkl')
-            print("Before Loading")
+            logging.info("Before Loading model and preprocessor")
             model = load_object(file_path=model_path)
             preprocessor = load_object(file_path=preprocessor_path)
-            print("After Loading")
+            logging.info("After Loading model and preprocessor")
+            
             data_scaled = preprocessor.transform(features)
             preds = model.predict(data_scaled)
+            logging.info(f"Predictions: {preds}")
             return preds
         
         except Exception as e:
+            logging.error(f"Error in prediction: {str(e)}")
             raise CustomException(e, sys)
 
 class CustomData:
@@ -52,8 +59,9 @@ class CustomData:
                 "reading_score": [self.reading_score],
                 "writing_score": [self.writing_score],
             }
-
+            logging.info(f"Custom data dictionary: {custom_data_input_dict}")
             return pd.DataFrame(custom_data_input_dict)
 
         except Exception as e:
+            logging.error(f"Error in creating DataFrame: {str(e)}")
             raise CustomException(e, sys)
